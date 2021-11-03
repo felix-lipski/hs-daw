@@ -10,6 +10,10 @@ import Control.Lens
 import qualified Graphics.Vty as V
 import qualified Brick.AttrMap as A
 import qualified Brick.Widgets.List as L
+import Control.Concurrent
+import Control.Concurrent.Async
+
+import BMT.Audio.Playback
 
 type ResName = ()
 
@@ -85,10 +89,16 @@ theMap = A.attrMap V.defAttr
   , (noteBlock, V.black `on` V.green)
   ]
 
-main :: IO ()
-main = do
+uiThread :: IO ()
+uiThread = do
     let initialState = UI { 
         _loop = Loop { _cols = [[40], [], [], [40], [], [40], [42], [43, 45]], 
         _colSelect = 2, _rowSelect = 40 }, _debugMsg = ""}
     finalState <- defaultMain app initialState
     return ()
+
+
+main :: IO ()
+main = do
+    res <- concurrently uiThread (aplay [0.04 * sin x | x <- [0.0, 0.02..800.0]])
+    print res

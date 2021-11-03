@@ -5,6 +5,10 @@ let
     lens
     vty
     brick
+
+    binary
+    typed-process
+    async
   ]);
 in
 [ customGhc ] ++ 
