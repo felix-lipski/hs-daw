@@ -7,11 +7,15 @@ import Brick
 import Brick.Widgets.Center
 import Brick.Widgets.Border
 import Control.Lens
+import Control.Monad
 import qualified Graphics.Vty as V
 import qualified Brick.AttrMap as A
 import qualified Brick.Widgets.List as L
-import Control.Concurrent
+-- import Control.Concurrent
 import Control.Concurrent.Async
+import Pipes
+import Pipes.Concurrent
+
 
 import BMT.Audio.Playback
 
@@ -97,8 +101,25 @@ uiThread = do
     finalState <- defaultMain app initialState
     return ()
 
+uiProducer :: Producer Float IO r
+uiProducer = forever $ do
+    lift $ uiThread
+    yield 0.03
+
+player :: Consumer Float IO ()
+player = do
+    lift $ aloop [0.05 * sin x | x <- [0.0, 0.02 .. 800.0]]
+    n <- await
+    lift $ aloop [0.05 * sin x | x <- [0.0, n .. 800.0]]
+    player
 
 main :: IO ()
 main = do
-    res <- concurrently uiThread (aplay [0.04 * sin x | x <- [0.0, 0.02..800.0]])
+    (output, input) <- spawn Unbounded
+    let ac1 = do runEffect $ uiProducer >-> toOutput output
+                 performGC
+    let ac2 = do runEffect $ fromInput input >-> player
+                 performGC
+    res <- concurrently ac1 ac2
     print res
+
