@@ -9,6 +9,9 @@ let
     binary
     typed-process
     async
+
+    pipes
+    pipes-concurrency
   ]);
 in
 [ customGhc ] ++ 

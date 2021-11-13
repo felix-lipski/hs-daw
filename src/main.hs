@@ -11,7 +11,6 @@ import Control.Monad
 import qualified Graphics.Vty as V
 import qualified Brick.AttrMap as A
 import qualified Brick.Widgets.List as L
--- import Control.Concurrent
 import Control.Concurrent.Async
 import Pipes
 import Pipes.Concurrent
